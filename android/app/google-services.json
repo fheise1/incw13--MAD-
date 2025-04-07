@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "141070141403",
+    "project_id": "incw13-mad",
+    "storage_bucket": "incw13-mad.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:141070141403:android:3bd972fdf9da2da1ba89fe",
+        "android_client_info": {
+          "package_name": "com.example.incw13"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAqdOWr2W5lTmv_s-2KXVcYtven6eiPGUs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
