@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -171,16 +172,24 @@ class _RegisterEmailSectionState extends State<RegisterEmailSection> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _nameController = TextEditingController();
   bool _success = false;
   bool _initialState = true;
   String? _userEmail;
 
   void _register() async {
     try {
-      await widget.auth.createUserWithEmailAndPassword(
+      UserCredential userCredential = await widget.auth.createUserWithEmailAndPassword(
         email: _emailController.text,
         password: _passwordController.text,
       );
+
+      // Save user data to Firestore
+      FirebaseFirestore.instance.collection('users').doc(userCredential.user?.uid).set({
+        'email': _emailController.text,
+        'name': _nameController.text,
+      });
+
       setState(() {
         _success = true;
         _userEmail = _emailController.text;
@@ -202,11 +211,21 @@ class _RegisterEmailSectionState extends State<RegisterEmailSection> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           TextFormField(
+            controller: _nameController,
+            decoration: InputDecoration(labelText: 'Name'),
+            validator: (value) {
+              if (value?.isEmpty ?? true) {
+                return 'Please enter your name';
+              }
+              return null;
+            },
+          ),
+          TextFormField(
             controller: _emailController,
             decoration: InputDecoration(labelText: 'Email'),
             validator: (value) {
               if (value?.isEmpty ?? true) {
-                return 'Please enter some text';
+                return 'Please enter your email';
               }
               return null;
             },
@@ -216,7 +235,7 @@ class _RegisterEmailSectionState extends State<RegisterEmailSection> {
             decoration: InputDecoration(labelText: 'Password'),
             validator: (value) {
               if (value?.isEmpty ?? true) {
-                return 'Please enter some text';
+                return 'Please enter your password';
               }
               return null;
             },
