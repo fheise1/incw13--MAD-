@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'firebase_options.dart';
-
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -42,6 +40,13 @@ class _MyHomePageState extends State<MyHomePage> {
     ));
   }
 
+  void _navigateToProfile() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => ProfileScreen(auth: _auth)),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -62,6 +67,91 @@ class _MyHomePageState extends State<MyHomePage> {
           children: <Widget>[
             RegisterEmailSection(auth: _auth),
             EmailPasswordForm(auth: _auth),
+            ElevatedButton(
+              onPressed: _navigateToProfile,
+              child: Text('Go to Profile'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class ProfileScreen extends StatelessWidget {
+  final FirebaseAuth auth;
+
+  ProfileScreen({Key? key, required this.auth}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final User? user = auth.currentUser;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Profile'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.logout),
+            onPressed: () async {
+              await auth.signOut();
+              Navigator.of(context).popUntil((route) => route.isFirst);
+            },
+          ),
+        ],
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Email: ${user?.email ?? 'No email available'}',
+              style: TextStyle(fontSize: 18),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () async {
+                final TextEditingController passwordController =
+                    TextEditingController();
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: Text('Change Password'),
+                    content: TextField(
+                      controller: passwordController,
+                      decoration: InputDecoration(labelText: 'New Password'),
+                      obscureText: true,
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () async {
+                          try {
+                            await user?.updatePassword(passwordController.text);
+                            Navigator.of(context).pop();
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                              content: Text('Password updated successfully'),
+                            ));
+                          } catch (e) {
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                              content: Text('Failed to update password'),
+                            ));
+                          }
+                        },
+                        child: Text('Submit'),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        child: Text('Cancel'),
+                      ),
+                    ],
+                  ),
+                );
+              },
+              child: Text('Change Password'),
+            ),
           ],
         ),
       ),
@@ -115,7 +205,7 @@ class _RegisterEmailSectionState extends State<RegisterEmailSection> {
             controller: _emailController,
             decoration: InputDecoration(labelText: 'Email'),
             validator: (value) {
-              if (value?.isEmpty??true) {
+              if (value?.isEmpty ?? true) {
                 return 'Please enter some text';
               }
               return null;
@@ -125,7 +215,7 @@ class _RegisterEmailSectionState extends State<RegisterEmailSection> {
             controller: _passwordController,
             decoration: InputDecoration(labelText: 'Password'),
             validator: (value) {
-              if(value?.isEmpty??true) {
+              if (value?.isEmpty ?? true) {
                 return 'Please enter some text';
               }
               return null;
@@ -148,9 +238,9 @@ class _RegisterEmailSectionState extends State<RegisterEmailSection> {
             child: Text(
               _initialState
                   ? 'Please Register'
-              : _success
-                  ? 'Successfully registered $_userEmail'
-                  : 'Registration failed',
+                  : _success
+                      ? 'Successfully registered $_userEmail'
+                      : 'Registration failed',
               style: TextStyle(color: _success ? Colors.green : Colors.red),
             ),
           ),
@@ -174,7 +264,7 @@ class _EmailPasswordFormState extends State<EmailPasswordForm> {
   final TextEditingController _passwordController = TextEditingController();
   bool _success = false;
   bool _initialState = true;
-  String _userEmail ='';
+  String _userEmail = '';
 
   void _signInWithEmailAndPassword() async {
     try {
@@ -211,7 +301,7 @@ class _EmailPasswordFormState extends State<EmailPasswordForm> {
             controller: _emailController,
             decoration: InputDecoration(labelText: 'Email'),
             validator: (value) {
-              if (value?.isEmpty??true) {
+              if (value?.isEmpty ?? true) {
                 return 'Please enter some text';
               }
               return null;
@@ -221,7 +311,7 @@ class _EmailPasswordFormState extends State<EmailPasswordForm> {
             controller: _passwordController,
             decoration: InputDecoration(labelText: 'Password'),
             validator: (value) {
-              if (value?.isEmpty??true) {
+              if (value?.isEmpty ?? true) {
                 return 'Please enter some text';
               }
               return null;
@@ -246,8 +336,8 @@ class _EmailPasswordFormState extends State<EmailPasswordForm> {
               _initialState
                   ? 'Please sign in'
                   : _success
-                  ? 'Successfully signed in $_userEmail'
-                  : 'Sign in failed',
+                      ? 'Successfully signed in $_userEmail'
+                      : 'Sign in failed',
               style: TextStyle(color: _success ? Colors.green : Colors.red),
             ),
           ),
